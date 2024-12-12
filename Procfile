@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run blightedisland/main.py
+web: sh setup.sh && streamlit run blighted_island/main.py
