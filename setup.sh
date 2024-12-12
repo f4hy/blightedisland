@@ -1,4 +1,7 @@
-[server]
-headless = true
+mkdir -p ~/.streamlit/echo "\
+[server]\n\
+headless = true\n\
 port = $PORT\n\
-enableCORS = false
+enableCORS = false\n\
+\n\
+" > ~/.streamlit/config.toml

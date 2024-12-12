@@ -2,7 +2,7 @@ import streamlit as st
 
 def main():
 
-    st.title('Blighted Island')
+    st.title('Welcome to Blighted Island')
     st.subheader('Stats for spirit island')
 
 
