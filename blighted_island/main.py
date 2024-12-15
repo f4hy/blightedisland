@@ -59,8 +59,10 @@ def enter_and_record_game():
             enter_player_spirit(i + 1) for i in range(selected_count[0])
         ]
     if not selected_adversary:
+        st.warning("Must select an adversary")
         return None
     if not all(player_selections):
+        st.warning("Must select all players and spirits")
         return None
 
     result = st.segmented_control(
