@@ -47,7 +47,7 @@ def list_games() -> list[Game]:
         except ValidationError:
             st.warning(f"Unable to parse {path}")
         games.append(game)
-    return games
+    return sorted(games, key=lambda x: x.date_played)
 
 
 def record_game(game: Game):

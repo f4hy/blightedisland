@@ -73,6 +73,7 @@ def enter_and_record_game():
     if result is None:
         return
     game = game_history.Game(
+        date_played=date_played,
         adversary=selected_adversary, players_played=player_selections, won=result
     )
     game.show()
