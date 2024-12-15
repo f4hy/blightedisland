@@ -1,29 +1,49 @@
 from typing import Literal
+from pydantic import BaseModel
 
 Complexity = Literal["Very High", "High", "Moderate", "Low"]
 
-SPIRITS: dict[str, Complexity] = {
-    "Lightning's Swift Strike": "Low",
-    "River Surges in Sunlight": "Low",
-    "Shadows Flicker Like Flame": "Low",
-    "Vital Strength of the Earth": "Low",
-    "A Spread of Rampant Green": "Moderate",
-    "Thunderspeaker": "Moderate",
-    "Bringer of Dreams and Nightmares": "High",
-    "Ocean's Hungry Grasp": "High",
-    "Keeper of the Forbidden Wilds": "Moderate",
-    "Sharp Fangs Behind the Leaves": "Moderate",
-    "Heart of the Wildfire": "High",
-    "Serpent Slumbering Beneath the Island": "High",
-    "Lure of the Deep Wilderness": "Moderate",
-    "Many Minds Move as One": "Moderate",
-    "Stone's Unyielding Defiance": "Moderate",
-    "Volcano Looming High": "Moderate",
-    "Vengeance as a Burning Plague": "High",
-    "Fractured Days Split the Sky": "Very High",
-    "Devouring Teeth Lurk Underfoot": "Low",
-    "Eyes Watch from the Trees": "Low",
-    "Fathomless Mud of the Swamp": "Low",
-    "Rising Heat of Stone and Sand": "Low",
-    "Sun-Bright Whirlwind": "Low",
-}
+
+class Spirit(BaseModel):
+    name: str
+    complexity: Complexity
+    aspect: str | None = None
+
+    def __str__(self):
+        if self.aspect:
+            return f"{self.name}[{self.aspect}]"
+        return f"{self.name}"
+
+
+SPIRITS: list[Spirit] = [
+    Spirit(name="Lightning's Swift Strike", complexity="Low"),
+    Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Panda"),
+    Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Wind"),
+    Spirit(name="River Surges in Sunlight", complexity="Low"),
+    Spirit(name="River Surges in Sunlight", complexity="Low", aspect="Sunshine"),
+    Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
+    Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Madness"),
+    Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Reach"),
+    Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
+    Spirit(name="Vital Strength of the Earth", complexity="Low"),
+    Spirit(name="Vital Strength of the Earth", complexity="Low", aspect="Resilience"),
+    Spirit(name="A Spread of Rampant Green", complexity="Moderate"),
+    Spirit(name="Thunderspeaker", complexity="Moderate"),
+    Spirit(name="Bringer of Dreams and Nightmares", complexity="High"),
+    Spirit(name="Ocean's Hungry Grasp", complexity="High"),
+    Spirit(name="Keeper of the Forbidden Wilds", complexity="Moderate"),
+    Spirit(name="Sharp Fangs Behind the Leaves", complexity="Moderate"),
+    Spirit(name="Heart of the Wildfire", complexity="High"),
+    Spirit(name="Serpent Slumbering Beneath the Island", complexity="High"),
+    Spirit(name="Lure of the Deep Wilderness", complexity="Moderate"),
+    Spirit(name="Many Minds Move as One", complexity="Moderate"),
+    Spirit(name="Stone's Unyielding Defiance", complexity="Moderate"),
+    Spirit(name="Volcano Looming High", complexity="Moderate"),
+    Spirit(name="Vengeance as a Burning Plague", complexity="High"),
+    Spirit(name="Fractured Days Split the Sky", complexity="Very High"),
+    Spirit(name="Devouring Teeth Lurk Underfoot", complexity="Low"),
+    Spirit(name="Eyes Watch from the Trees", complexity="Low"),
+    Spirit(name="Fathomless Mud of the Swamp", complexity="Low"),
+    Spirit(name="Rising Heat of Stone and Sand", complexity="Low"),
+    Spirit(name="Sun-Bright Whirlwind", complexity="Low"),
+]
