@@ -1,5 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel
+import streamlit as st
+import urllib.parse
 
 Complexity = Literal["Very High", "High", "Moderate", "Low"]
 
@@ -14,8 +16,16 @@ class Spirit(BaseModel):
             return f"{self.name}[{self.aspect}]"
         return f"{self.name}"
 
+def spirit_image(spirit: Spirit):
+    root = "https://spiritislandwiki.com/images/c/c2/"
+    name = spirit.name.replace(" ", "_")
+    filename = urllib.parse.quote_plus(name) + ".png"
+    path = f"{root}{filename}"
+    st.write(path)
+    st.image(path)
+    
 
-SPIRITS: list[Spirit] = [
+SPIRITS: list[Spirit] = sorted([
     Spirit(name="Lightning's Swift Strike", complexity="Low"),
     Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Panda"),
     Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Wind"),
@@ -46,4 +56,5 @@ SPIRITS: list[Spirit] = [
     Spirit(name="Fathomless Mud of the Swamp", complexity="Low"),
     Spirit(name="Rising Heat of Stone and Sand", complexity="Low"),
     Spirit(name="Sun-Bright Whirlwind", complexity="Low"),
-]
+    Spirit(name="Shroud of Silent Mist", complexity="High"),
+], key: lambda str)
