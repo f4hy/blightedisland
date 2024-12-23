@@ -34,7 +34,6 @@ SPIRITS: list[Spirit] = sorted([
     Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
     Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Madness"),
     Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Reach"),
-    Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
     Spirit(name="Vital Strength of the Earth", complexity="Low"),
     Spirit(name="Vital Strength of the Earth", complexity="Low", aspect="Resilience"),
     Spirit(name="A Spread of Rampant Green", complexity="Moderate"),
@@ -57,4 +56,4 @@ SPIRITS: list[Spirit] = sorted([
     Spirit(name="Rising Heat of Stone and Sand", complexity="Low"),
     Spirit(name="Sun-Bright Whirlwind", complexity="Low"),
     Spirit(name="Shroud of Silent Mist", complexity="High"),
-], key: lambda str)
+], key=str)
