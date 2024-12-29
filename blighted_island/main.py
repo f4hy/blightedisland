@@ -79,7 +79,7 @@ def enter_and_record_game():
         won = result == "won"
     game = game_history.Game(
         date_played=date_played,
-        adversary=selected_adversary, players_played=player_selections, won=result, dsync=dsync
+        adversary=selected_adversary, players_played=player_selections, won=result, desync=desync
     )
     game.show()
     if st.button("Save", type="primary"):
