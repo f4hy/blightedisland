@@ -67,14 +67,19 @@ def enter_and_record_game():
 
     result = st.segmented_control(
         label="Result?",
-        options=[True, False],
-        format_func=lambda x: "Won" if x else "Lost",
-    )
+        options=["won", "lost", "desync"],
+    )    
     if result is None:
         return
+    if result == "desync":
+        won = None
+        desync = True
+    else:
+        desync = False
+        won = result == "won"
     game = game_history.Game(
         date_played=date_played,
-        adversary=selected_adversary, players_played=player_selections, won=result
+        adversary=selected_adversary, players_played=player_selections, won=result, dsync=dsync
     )
     game.show()
     if st.button("Save", type="primary"):
