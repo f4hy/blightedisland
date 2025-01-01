@@ -28,12 +28,16 @@ class Game(BaseModel, frozen=True):
         st.table({"Adversary": self.adversary.model_dump()})
         st.table({p.player.name: p.spirit.model_dump() for p in self.players_played})
 
+class GameFilters(BaseModel):
+    min_players: int
+    max_players: int
 
 @st.cache_resource
 def get_fs():
     return fsspec.filesystem("s3")
 
 
+@st.cache(ttl=300)
 def list_games() -> list[Game]:
     fs = get_fs()
     try:
