@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ValidationError
-
+from collections import defaultdict
 import streamlit as st
 import spirits
 import random
@@ -13,34 +13,107 @@ def main():
     st.title("Welcome to Blighted Island")
     st.subheader("Stats for spirit island")
 
-    random_spirit, game_tracker, history = st.tabs(
-        ["Choose a random Spirit", "Record New Game", "Game History"]
+    stats, random_spirit, game_tracker, history = st.tabs(
+        ["Stats", "Choose a random Spirit", "Record New Game", "Game History"]
     )
 
     with random_spirit:
-        choices = spirits.SPIRITS
         if st.button("Randomize"):
-            selected = random.choice(choices)
-            bar = st.progress(0, text="")
-            for i in range(50):
-                time.sleep(0.01)
-                bar.progress(i * 2, text=str(random.choice(choices)))
-            time.sleep(0.1)
-            bar.empty()
+            selected = spirits.random_spirit()
             st.subheader(f"{str(selected)}")
             st.write(f"complexity={selected.complexity}")
 
     with game_tracker:
         enter_and_record_game()
 
+    games = game_history.list_games()
     with history:
-        games = game_history.list_games()
         for g in games:
             player_str = ", ".join(p.player.name for p in g.players_played)
             with st.expander(
-                f"{g.date_played} {player_str}", icon=("🏆" if g.won else "❌")
+                f"{g.date_played} {player_str}  |  {g.adversary}",
+                icon=("🏆" if g.won else "❌"),
             ):
                 g.show()
+
+    with stats:
+        wins_and_losses(games)
+        breakdown_by_adversary(games)
+        breakdown_by_spirit(games)
+        breakdown_by_player(games)
+
+
+def wins_and_losses(games: list[game_history.Game]):
+    col1, col2 = st.columns(2)
+    col1.metric("wins", wins(games))
+    col2.metric("losses", losses(games))
+
+
+def wins(games: list[game_history.Game]):
+    return len([game for game in games if game.won == True])
+
+
+def losses(games: list[game_history.Game]):
+    return len([game for game in games if game.won == False])
+
+
+def breakdown_by_adversary(games: list[game_history.Game]):
+    grouped = defaultdict(list)
+    for game in games:
+        grouped[game.adversary].append(game)
+    st.divider()
+    st.subheader("breakdown by adversary")
+    data = [
+        {
+            "adversary": str(adversary),
+            "wins": wins(games_for_adversary),
+            "losses:": (-losses(games_for_adversary)),
+        }
+        for adversary, games_for_adversary in grouped.items()
+    ]
+    st.bar_chart(
+        data, x="adversary", color=["#FF0000", "#0000FF"], height=400, horizontal=True
+    )
+
+
+def breakdown_by_spirit(games: list[game_history.Game]):
+    grouped = defaultdict(list)
+    for game in games:
+        for player in game.players_played:
+            grouped[str(player.spirit)].append(game)
+    st.divider()
+    st.subheader("breakdown by spirit")
+    data = [
+        {
+            "spirit": str(spirit),
+            "wins": wins(games_for_spirit),
+            "losses:": (-losses(games_for_spirit)),
+        }
+        for spirit, games_for_spirit in grouped.items()
+    ]
+    st.bar_chart(
+        data, x="spirit", color=["#FF0000", "#0000FF"], height=400, horizontal=True
+    )
+
+
+def breakdown_by_player(games: list[game_history.Game]):
+    grouped = defaultdict(list)
+    for game in games:
+        for player in game.players_played:
+            grouped[player.player.name].append(game)
+    st.divider()
+    st.subheader("breakdown by player")
+    data = [
+        {
+            "player": str(player),
+            "wins": wins(games_for_player),
+            "losses:": (-losses(games_for_player)),
+        }
+        for player, games_for_player in grouped.items()
+    ]
+    st.bar_chart(
+        data, x="player", color=["#FF0000", "#0000FF"], height=400, horizontal=True
+    )
 
 
 def enter_and_record_game():
@@ -68,7 +141,7 @@ def enter_and_record_game():
     result = st.segmented_control(
         label="Result?",
         options=["won", "lost", "desync"],
-    )    
+    )
     if result is None:
         return
     if result == "desync":
@@ -79,7 +152,10 @@ def enter_and_record_game():
         won = result == "won"
     game = game_history.Game(
         date_played=date_played,
-        adversary=selected_adversary, players_played=player_selections, won=won, desync=desync
+        adversary=selected_adversary,
+        players_played=player_selections,
+        won=won,
+        desync=desync,
     )
     game.show()
     if st.button("Save", type="primary"):

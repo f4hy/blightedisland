@@ -3,9 +3,12 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class Adversary(BaseModel):
+class Adversary(BaseModel, frozen=True):
     name: str
     level: int
+
+    def __str__(self):
+        return f"[{self.level}]{self.name.split(' ')[0]}"
 
 
 ADVERSARY_NAMES: list[str] = sorted(

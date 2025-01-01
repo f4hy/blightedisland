@@ -16,14 +16,13 @@ class PlayerSpirit(BaseModel):
     spirit: Spirit
 
 
-class Game(BaseModel):
+class Game(BaseModel, frozen=True):
     date_played: date = Field(default_factory=date.today)
     adversary: Adversary
     players_played: list[PlayerSpirit]
     won: bool | None
     desync: bool | None = None
-    
-    
+
     def show(self):
         st.write("WON!" if self.won else "Lost :(")
         st.table({"Adversary": self.adversary.model_dump()})
