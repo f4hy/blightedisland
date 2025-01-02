@@ -1,4 +1,5 @@
 import random
+import time
 from typing import Literal
 from pydantic import BaseModel
 import streamlit as st
@@ -69,6 +70,8 @@ SPIRITS: list[Spirit] = sorted(
 def random_spirit():
     """Get a random spirit, don't count aspects twice."""
     spirit_names = {s.name for s in SPIRITS}
+    with st.spinner("Randomizing spirit"):
+        time.sleep(1)
     selected_name = random.choice(list(spirit_names))
     aspects = [s for s in SPIRITS if selected_name == s.name]
     return random.choice(aspects)

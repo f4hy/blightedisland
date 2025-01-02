@@ -39,6 +39,9 @@ def main():
     with stats:
         filters = game_history.set_filters()
         filtered_games = game_history.filter_games(games, filters)
+        if len(filtered_games) == 0:
+            st.write("No recorded games :(")
+            return
         wins_and_losses(filtered_games)
         breakdown_by_adversary(filtered_games)
         breakdown_by_spirit(filtered_games)
@@ -49,7 +52,6 @@ def wins_and_losses(games: list[game_history.Game]):
     col1, col2 = st.columns(2)
     col1.metric("wins", wins(games))
     col2.metric("losses", losses(games))
-
 
 def wins(games: list[game_history.Game]):
     return len([game for game in games if game.won == True])
