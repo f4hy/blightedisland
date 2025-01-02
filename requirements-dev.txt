@@ -1,0 +1,8 @@
+streamlit
+pydantic
+fsspec[s3]
+ruff
+flake8
+python-lsp-server[all]
+python-lsp-ruff
+python-lsp-mypy

@@ -37,10 +37,12 @@ def main():
                 g.show()
 
     with stats:
-        wins_and_losses(games)
-        breakdown_by_adversary(games)
-        breakdown_by_spirit(games)
-        breakdown_by_player(games)
+        filters = game_history.set_filters()
+        filtered_games = game_history.filter_games(games, filters)
+        wins_and_losses(filtered_games)
+        breakdown_by_adversary(filtered_games)
+        breakdown_by_spirit(filtered_games)
+        breakdown_by_player(filtered_games)
 
 
 def wins_and_losses(games: list[game_history.Game]):
