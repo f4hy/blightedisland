@@ -8,7 +8,7 @@ class Adversary(BaseModel, frozen=True):
     level: int
 
     def __str__(self):
-        return f"[{self.level}]{self.name.split(' ')[0]}"
+        return f"[{self.level}]{self.name.split(' -')[0]}"
 
 
 ADVERSARY_NAMES: list[str] = sorted(
