@@ -64,6 +64,7 @@ def record_game(game: Game):
     hashstr = hashlib.sha256(game_json.encode()).hexdigest()
     filepath = f"{STORAGE_ROOT}{hashstr}.json"
     fs.write_text(filepath, game_json)
+    st.cache_data.clear()
 
 
 def set_filters() -> GameFilters:
