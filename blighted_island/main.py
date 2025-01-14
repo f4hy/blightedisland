@@ -13,8 +13,8 @@ def main():
     st.title("Welcome to Blighted Island")
     st.subheader("Stats for spirit island")
 
-    stats, random_spirit, game_tracker, history = st.tabs(
-        ["Stats", "Choose a random Spirit", "Record New Game", "Game History"]
+    stats, random_spirit, random_adversary, game_tracker, history = st.tabs(
+        ["Stats", "Choose a random Spirit", "Random Adversary", "Record New Game", "Game History"]
     )
 
     with random_spirit:
@@ -47,6 +47,18 @@ def main():
         breakdown_by_spirit(filtered_games)
         breakdown_by_player(filtered_games)
 
+    with random_adversary:
+        level = st.slider("Choose adversary level", min_value=0, max_value=6, value=4)
+        left, right = st.columns(2)
+        picked: adversary.Adversary | None = None
+        with left:
+            if st.button("Random adversary"):
+                picked = adversary.random_adversary(level)
+        with right:
+            if st.button("Random weighted adversary"):
+                picked = adversary.weighted_random_adversary(level, games)
+        if picked:
+            st.write(picked)
 
 def wins_and_losses(games: list[game_history.Game]):
     col1, col2 = st.columns(2)
