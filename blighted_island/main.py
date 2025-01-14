@@ -58,7 +58,7 @@ def main():
             if st.button("Random weighted adversary"):
                 picked = adversary.weighted_random_adversary(level, games)
         if picked:
-            st.write(picked)
+            st.write(picked.name)
 
 def wins_and_losses(games: list[game_history.Game]):
     col1, col2 = st.columns(2)
