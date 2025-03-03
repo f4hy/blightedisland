@@ -1,214 +1,274 @@
-from pydantic import BaseModel, Field, ValidationError
-from collections import defaultdict
-import streamlit as st
-import spirits
+"""
+Module for managing Spirit Island spirits.
+Handles representation, selection, and randomization of spirits.
+"""
+
 import random
 import time
-import game_history
-import adversary
-import players
+from typing import Literal, List, Dict, Optional, Set, Tuple
+from pydantic import BaseModel, Field
+import streamlit as st
+import urllib.parse
+
+# Type definition for spirit complexity
+Complexity = Literal["Very High", "High", "Moderate", "Low"]
 
 
-def main():
-    st.title("Welcome to Blighted Island")
-    st.subheader("Stats for spirit island")
-
-    stats, random_spirit, random_adversary, game_tracker, history = st.tabs(
-        [
-            "Stats",
-            "Choose a random Spirit",
-            "Random Adversary",
-            "Record New Game",
-            "Game History",
-        ]
-    )
-
-    with random_spirit:
-        if st.button("Randomize"):
-            selected = spirits.random_spirit()
-            st.subheader(f"{str(selected)}")
-            st.write(f"complexity={selected.complexity}")
-
-    with game_tracker:
-        enter_and_record_game()
-
-    games = game_history.list_games()
-    with history:
-        for g in games:
-            player_str = ", ".join(p.player.name for p in g.players_played)
-            with st.expander(
-                f"{g.date_played} {player_str}  |  {g.adversary}",
-                icon=("🏆" if g.won else "❌"),
-            ):
-                g.show()
-
-    with stats:
-        filters = game_history.set_filters()
-        filtered_games = game_history.filter_games(games, filters)
-        if len(filtered_games) == 0:
-            st.write("No recorded games :(")
-            return
-        wins_and_losses(filtered_games)
-        breakdown_by_adversary(filtered_games)
-        breakdown_by_spirit(filtered_games)
-        breakdown_by_player(filtered_games)
-
-    with random_adversary:
-        level = st.slider("Choose adversary level", min_value=0, max_value=6, value=4)
-        left, right = st.columns(2)
-        picked: adversary.Adversary | None = None
-        with left:
-            if st.button("Random adversary"):
-                picked = adversary.random_adversary(level)
-        with right:
-            if st.button("Random weighted adversary"):
-                picked = adversary.weighted_random_adversary(level, games)
-        if picked:
-            st.write(picked.name)
-
-
-def wins_and_losses(games: list[game_history.Game]):
-    col1, col2 = st.columns(2)
-    col1.metric("wins", wins(games))
-    col2.metric("losses", losses(games))
-
-
-def wins(games: list[game_history.Game]):
-    return len([game for game in games if game.won == True])
-
-
-def losses(games: list[game_history.Game]):
-    return len([game for game in games if game.won == False])
-
-
-def breakdown_by_adversary(games: list[game_history.Game]):
-    grouped = defaultdict(list)
-    for game in games:
-        grouped[game.adversary].append(game)
-    st.divider()
-    st.subheader("breakdown by adversary")
-    data = [
-        {
-            "adversary": str(adversary),
-            "wins": wins(games_for_adversary),
-            "losses:": (-losses(games_for_adversary)),
+class Spirit(BaseModel):
+    """
+    Represents a Spirit Island spirit with its properties.
+    Includes name, complexity, and optional aspect.
+    """
+    name: str
+    complexity: Complexity
+    aspect: Optional[str] = None
+    
+    def __str__(self) -> str:
+        """Format spirit as a string, including aspect if present."""
+        if self.aspect:
+            return f"{self.name} [{self.aspect}]"
+        return f"{self.name}"
+        
+    @property
+    def base_name(self) -> str:
+        """Get the base name without aspect."""
+        return self.name
+        
+    @property 
+    def display_name(self) -> str:
+        """Get a fully formatted display name."""
+        if self.aspect:
+            return f"{self.name} • {self.aspect} Aspect"
+        return self.name
+        
+    @property
+    def complexity_level(self) -> int:
+        """Convert complexity text to numeric value for sorting."""
+        complexity_map = {
+            "Low": 1,
+            "Moderate": 2,
+            "High": 3,
+            "Very High": 4
         }
-        for adversary, games_for_adversary in grouped.items()
-    ]
-    st.bar_chart(
-        data, x="adversary", color=["#FF0000", "#0000FF"], height=400, horizontal=True
-    )
+        return complexity_map.get(self.complexity, 0)
 
 
-def breakdown_by_spirit(games: list[game_history.Game]):
-    grouped = defaultdict(list)
+def spirit_image(spirit: Spirit) -> None:
+    """
+    Display an image of the spirit from the Spirit Island wiki.
+    
+    Args:
+        spirit: The spirit to display an image for
+    """
+    try:
+        root = "https://spiritislandwiki.com/images/c/c2/"
+        name = spirit.name.replace(" ", "_")
+        filename = urllib.parse.quote_plus(name) + ".png"
+        path = f"{root}{filename}"
+        
+        st.write(f"**{spirit.display_name}**")
+        st.image(path, caption=f"Complexity: {spirit.complexity}")
+    except Exception as e:
+        st.error(f"Could not load image for {spirit.name}: {e}")
+
+
+# Complete list of spirits in Spirit Island (base game + expansions)
+SPIRITS: List[Spirit] = sorted(
+    [
+        # Base Game Spirits
+        Spirit(name="Lightning's Swift Strike", complexity="Low"),
+        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Pandemonium"),
+        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Wind"),
+        Spirit(name="River Surges in Sunlight", complexity="Low"),
+        Spirit(name="River Surges in Sunlight", complexity="Low", aspect="Sunshine"),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Madness"),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Reach"),
+        Spirit(name="Vital Strength of the Earth", complexity="Low"),
+        Spirit(name="Vital Strength of the Earth", complexity="Low", aspect="Resilience"),
+        
+        # Branch & Claw Expansion
+        Spirit(name="A Spread of Rampant Green", complexity="Moderate"),
+        Spirit(name="Thunderspeaker", complexity="Moderate"),
+        Spirit(name="Bringer of Dreams and Nightmares", complexity="High"),
+        Spirit(name="Ocean's Hungry Grasp", complexity="High"),
+        
+        # Promo Pack 1
+        Spirit(name="Keeper of the Forbidden Wilds", complexity="Moderate"),
+        Spirit(name="Sharp Fangs Behind the Leaves", complexity="Moderate"),
+        
+        # Promo Pack 2
+        Spirit(name="Heart of the Wildfire", complexity="High"),
+        Spirit(name="Serpent Slumbering Beneath the Island", complexity="High"),
+        
+        # Jagged Earth Expansion
+        Spirit(name="Lure of the Deep Wilderness", complexity="Moderate"),
+        Spirit(name="Many Minds Move as One", complexity="Moderate"),
+        Spirit(name="Stone's Unyielding Defiance", complexity="Moderate"),
+        Spirit(name="Volcano Looming High", complexity="Moderate"),
+        Spirit(name="Vengeance as a Burning Plague", complexity="High"),
+        Spirit(name="Fractured Days Split the Sky", complexity="Very High"),
+        
+        # Nature Incarnate Expansion
+        Spirit(name="Devouring Teeth Lurk Underfoot", complexity="Low"),
+        Spirit(name="Eyes Watch from the Trees", complexity="Low"),
+        Spirit(name="Fathomless Mud of the Swamp", complexity="Low"),
+        Spirit(name="Rising Heat of Stone and Sand", complexity="Low"),
+        Spirit(name="Sun-Bright Whirlwind", complexity="Low"),
+        Spirit(name="Shroud of Silent Mist", complexity="High"),
+    ],
+    key=str,
+)
+
+
+def get_unique_spirit_names() -> Set[str]:
+    """
+    Get a set of unique spirit base names (without aspects).
+    
+    Returns:
+        Set[str]: Set of unique spirit names
+    """
+    return {s.name for s in SPIRITS}
+
+
+def get_spirits_by_complexity(complexity: Optional[Complexity] = None) -> List[Spirit]:
+    """
+    Filter spirits by complexity level.
+    
+    Args:
+        complexity: The complexity level to filter by, or None for all
+        
+    Returns:
+        List[Spirit]: Filtered list of spirits
+    """
+    if complexity is None:
+        return SPIRITS
+    
+    return [s for s in SPIRITS if s.complexity == complexity]
+
+
+def random_spirit(complexity: Optional[Complexity] = None) -> Spirit:
+    """
+    Get a random spirit, optionally filtered by complexity.
+    Doesn't count aspects as separate spirits for randomization.
+    
+    Args:
+        complexity: Optional complexity filter
+        
+    Returns:
+        Spirit: A randomly selected spirit
+    """
+    filtered_spirits = get_spirits_by_complexity(complexity)
+    
+    # Get unique spirit names from the filtered list
+    spirit_names = {s.name for s in filtered_spirits}
+    
+    with st.spinner("Selecting a random spirit..."):
+        time.sleep(0.8)  # Brief delay for UX
+    
+    selected_name = random.choice(list(spirit_names))
+    
+    # Get all variants (base + aspects) of the selected spirit
+    aspects = [s for s in filtered_spirits if selected_name == s.name]
+    
+    # Return a random variant
+    return random.choice(aspects)
+
+
+def group_spirits_by_complexity() -> Dict[Complexity, List[Spirit]]:
+    """
+    Group spirits by their complexity levels.
+    
+    Returns:
+        Dict[Complexity, List[Spirit]]: Dictionary mapping complexity to spirits
+    """
+    result: Dict[Complexity, List[Spirit]] = {
+        "Low": [],
+        "Moderate": [],
+        "High": [],
+        "Very High": []
+    }
+    
+    for spirit in SPIRITS:
+        result[spirit.complexity].append(spirit)
+    
+    return result
+
+
+def get_spirit_stats(games: List) -> Dict[str, Dict[str, int]]:
+    """
+    Calculate statistics for each spirit from game history.
+    
+    Args:
+        games: List of played games
+        
+    Returns:
+        Dict mapping spirit names to their statistics
+    """
+    stats: Dict[str, Dict[str, int]] = {}
+    
     for game in games:
-        for player in game.players_played:
-            grouped[str(player.spirit)].append(game)
-    st.divider()
-    st.subheader("breakdown by spirit")
-    data = [
-        {
-            "spirit": str(spirit),
-            "wins": wins(games_for_spirit),
-            "losses:": (-losses(games_for_spirit)),
-        }
-        for spirit, games_for_spirit in grouped.items()
-    ]
-    st.bar_chart(
-        data, x="spirit", color=["#FF0000", "#0000FF"], height=400, horizontal=True
-    )
+        for player_spirit in game.players_played:
+            spirit_str = str(player_spirit.spirit)
+            
+            if spirit_str not in stats:
+                stats[spirit_str] = {"wins": 0, "losses": 0, "total": 0}
+                
+            stats[spirit_str]["total"] += 1
+            
+            if game.won is True:
+                stats[spirit_str]["wins"] += 1
+            elif game.won is False:
+                stats[spirit_str]["losses"] += 1
+                
+    # Calculate win percentages
+    for spirit in stats:
+        total = stats[spirit]["total"]
+        stats[spirit]["win_pct"] = round(stats[spirit]["wins"] / total * 100 if total > 0 else 0, 1)
+                
+    return stats
 
 
-def breakdown_by_player(games: list[game_history.Game]):
-    grouped = defaultdict(list)
-    for game in games:
-        for player in game.players_played:
-            grouped[player.player.name].append(game)
-    st.divider()
-    st.subheader("breakdown by player")
-    data = [
-        {
-            "player": str(player),
-            "wins": wins(games_for_player),
-            "losses:": (-losses(games_for_player)),
-        }
-        for player, games_for_player in grouped.items()
-    ]
-    st.bar_chart(
-        data, x="player", color=["#FF0000", "#0000FF"], height=400, horizontal=True
+def select_spirit(key: str = "select_spirit", default_index: Optional[int] = None) -> Optional[Spirit]:
+    """
+    Create a Streamlit UI for selecting a spirit.
+    
+    Args:
+        key: Unique key for the Streamlit component
+        default_index: Optional default selection index
+        
+    Returns:
+        Optional[Spirit]: The selected spirit or None
+    """
+    # Group spirits by complexity
+    grouped = group_spirits_by_complexity()
+    
+    # Create a list of options with headers
+    options = []
+    display_names = []
+    
+    for complexity in ["Low", "Moderate", "High", "Very High"]:
+        if grouped[complexity]:
+            # Add a non-selectable header
+            options.append(None)
+            display_names.append(f"--- {complexity} Complexity ---")
+            
+            # Add spirits for this complexity
+            for spirit in grouped[complexity]:
+                options.append(spirit)
+                display_names.append(str(spirit))
+    
+    # Create the selectbox with grouped options
+    selected_index = st.selectbox(
+        "Select Spirit",
+        options=range(len(options)),
+        format_func=lambda i: display_names[i],
+        key=key,
+        index=default_index
     )
-
-
-def enter_and_record_game():
-    date_played = st.date_input("date_played")
-    if not date_played:
-        return
-    player_counts = enumerate(["Two", "Three", "Four"], start=2)
-    selected_count = st.segmented_control(
-        label="Number of players", options=player_counts, format_func=lambda x: x[1]
-    )
-    if not selected_count:
-        return None
-    if selected_count:
-        selected_adversary = adversary.enter_adversary()
-        player_selections = [
-            enter_player_spirit(i + 1) for i in range(selected_count[0])
-        ]
-    if not selected_adversary:
-        st.warning("Must select an adversary")
-        return None
-    if not all(player_selections):
-        st.warning("Must select all players and spirits")
-        return None
-
-    result = st.segmented_control(
-        label="Result?",
-        options=["won", "lost", "desync"],
-    )
-    if result is None:
-        return
-    if result == "desync":
-        won = None
-        desync = True
-    else:
-        desync = False
-        won = result == "won"
-    game = game_history.Game(
-        date_played=date_played,
-        adversary=selected_adversary,
-        players_played=player_selections,
-        won=won,
-        desync=desync,
-    )
-    game.show()
-    if st.button("Save", type="primary"):
-        game_history.record_game(game)
-        st.balloons()
-
-
-def enter_player_spirit(player_number: int):
-    selected_player = st.segmented_control(
-        label=f"Player {player_number}",
-        options=players.PLAYERS,
-        format_func=lambda x: x.name,
-        key=f"select_player{player_number}",
-    )
-    selected_spirit = st.selectbox(
-        label="Select Spirit",
-        options=spirits.SPIRITS,
-        key=f"select_spirit_for_player{player_number}",
-        index=None,
-    )
-    if selected_player and selected_spirit:
-        try:
-            return game_history.PlayerSpirit(
-                player=selected_player, spirit=selected_spirit
-            )
-        except ValidationError:
-            return None
+    
+    # Return the selected spirit if a valid selection was made
+    if selected_index is not None and options[selected_index] is not None:
+        return options[selected_index]
+    
     return None
-
-
-if __name__ == "__main__":
-    main()
