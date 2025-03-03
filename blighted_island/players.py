@@ -15,6 +15,8 @@ PLAYER_NAMES: list[str] = sorted(
         "Bill",
         "Colin",
         "Nathan",
+        "Linda",
+        "Manu",
     ]
 )
 

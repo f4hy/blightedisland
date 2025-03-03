@@ -14,7 +14,13 @@ def main():
     st.subheader("Stats for spirit island")
 
     stats, random_spirit, random_adversary, game_tracker, history = st.tabs(
-        ["Stats", "Choose a random Spirit", "Random Adversary", "Record New Game", "Game History"]
+        [
+            "Stats",
+            "Choose a random Spirit",
+            "Random Adversary",
+            "Record New Game",
+            "Game History",
+        ]
     )
 
     with random_spirit:
@@ -60,10 +66,12 @@ def main():
         if picked:
             st.write(picked.name)
 
+
 def wins_and_losses(games: list[game_history.Game]):
     col1, col2 = st.columns(2)
     col1.metric("wins", wins(games))
     col2.metric("losses", losses(games))
+
 
 def wins(games: list[game_history.Game]):
     return len([game for game in games if game.won == True])
