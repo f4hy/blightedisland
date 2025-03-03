@@ -4,7 +4,9 @@ import os
 from typing import Dict, Any
 
 # Storage configuration
-STORAGE_ROOT = os.environ.get("BLIGHTED_ISLAND_STORAGE", "s3://blightedisland/recorded_games/")
+STORAGE_ROOT = os.environ.get(
+    "BLIGHTED_ISLAND_STORAGE", "s3://blightedisland/recorded_games/"
+)
 
 # Application settings
 APP_TITLE = "Blighted Island"
