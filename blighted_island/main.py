@@ -442,7 +442,7 @@ def render_game_history_tab(games: List[game_history.Game]) -> None:
             icon = "⚠️"
 
         with st.expander(
-            f"{g.date_played} | {g.adversary} | {player_str}", expanded=False
+            f"{icon} | {g.date_played} | {g.adversary} | {player_str} ", expanded=False
         ):
             g.show()
 

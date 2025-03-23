@@ -65,8 +65,8 @@ class Game(BaseModel, frozen=True):
         spirit_data = {
             f"Spirit {i + 1}": str(p.spirit) for i, p in enumerate(self.players_played)
         }
-
-        st.table([player_data, spirit_data])
+        data = {p: s for p, s in zip(player_data.values(), spirit_data.values())}
+        st.table(data)
 
         # Show notes if available
         if self.notes:
