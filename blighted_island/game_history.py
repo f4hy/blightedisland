@@ -193,6 +193,36 @@ def record_game(game: Game) -> bool:
         traceback.print_exc()
         return False
 
+def delete_game(game: Game) -> bool:
+    """
+    Save a game record to storage.
+
+    Args:
+        game: The game to save
+
+    Returns:
+        bool: True if successfully saved, False otherwise
+    """
+    fs = get_fs()
+    if not fs:
+        st.error("Unable to connect to storage")
+        return False
+
+    try:
+        game_json = game.model_dump_json()
+        hashstr = hashlib.sha256(game_json.encode()).hexdigest()
+        filepath = f"{STORAGE_ROOT}{hashstr}.json"
+
+        fs.rm(filepath)
+        st.cache_data.clear()
+        return True
+
+    except Exception as e:
+        logger.error(f"Error saving game: {e}")
+        st.error(f"Unable to save game: {e}")
+        traceback.print_exc()
+        return False
+
 
 def export_games(games: List[Game], filename: str = None) -> str:
     """

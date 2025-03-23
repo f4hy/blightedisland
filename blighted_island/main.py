@@ -453,10 +453,11 @@ def render_game_history_tab(games: List[game_history.Game]) -> None:
                     "🗑️ Delete",
                     key=f"delete_game_{i}",
                     help="Delete this game record",
-                    disabled=True,
+                    disabled=False,
                 ):
                     # Delete functionality would be implemented here
                     st.warning("Delete functionality not implemented yet")
+                    game_history.delete_game(g)
 
 
 def render_settings_tab(games: List[game_history.Game]) -> None:
