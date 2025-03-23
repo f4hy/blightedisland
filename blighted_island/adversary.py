@@ -105,11 +105,10 @@ def weighted_random_adversary(level: int, games: List["Game"]) -> Adversary:
         max_adversary, max_count = ADVERSARY_NAMES[0], 1
 
     # Calculate weights: less frequently played adversaries get higher weight
-    weights = [(max_count / counter.get(a, 1) - 1) for a in ADVERSARY_NAMES]
+    weights = [(max_count / (counter.get(a, 0)+1) - 1) for a in ADVERSARY_NAMES]
 
     # Handle negative or zero weights (shouldn't happen but just in case)
-    weights = [max(w, 0.1) for w in weights]
-
+    weights = [max(w, 0.01)**2 for w in weights]
     # Select adversary using weighted random choice
     adv_name = random.choices(ADVERSARY_NAMES, weights=weights)[0]
 

@@ -233,7 +233,7 @@ def render_random_adversary_tab(games: List[game_history.Game]) -> None:
         "Choose adversary level",
         min_value=0,
         max_value=6,
-        value=3,
+        value=5,
         help="Higher levels are more difficult",
     )
 
