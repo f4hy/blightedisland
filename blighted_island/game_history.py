@@ -81,6 +81,7 @@ class GameFilters(BaseModel):
     max_players: int
     player: Optional[Player] = None
     adversary: Optional[str] = None
+    adversary_level: Optional[int] = None  # Added filter for adversary level
     date_from: Optional[date] = None
     date_to: Optional[date] = None
 
@@ -98,6 +99,12 @@ class GameFilters(BaseModel):
 
         if self.adversary:
             filtered = [g for g in filtered if g.adversary.name == self.adversary]
+
+        # Apply the adversary level filter if set
+        if self.adversary_level is not None:
+            filtered = [
+                g for g in filtered if g.adversary.level == self.adversary_level
+            ]
 
         if self.date_from:
             filtered = [g for g in filtered if g.date_played >= self.date_from]
@@ -192,6 +199,7 @@ def record_game(game: Game) -> bool:
         st.error(f"Unable to save game: {e}")
         traceback.print_exc()
         return False
+
 
 def delete_game(game: Game) -> bool:
     """
@@ -293,6 +301,7 @@ def set_filters() -> GameFilters:
     date_from = None
     date_to = None
     adversary = None
+    adversary_level = None
 
     with st.expander("Set filters"):
         col1, col2 = st.columns(2)
@@ -309,19 +318,32 @@ def set_filters() -> GameFilters:
         player = select_player()
 
         # Adversary filter
-        from adversary import ADVERSARY_NAMES
+        col1, col2 = st.columns(2)
+        with col1:
+            from adversary import ADVERSARY_NAMES
 
-        adversary = st.selectbox(
-            "Filter by adversary", options=["All"] + ADVERSARY_NAMES, index=0
-        )
-        if adversary == "All":
-            adversary = None
+            adversary = st.selectbox(
+                "Filter by adversary", options=["All"] + ADVERSARY_NAMES, index=0
+            )
+            if adversary == "All":
+                adversary = None
+
+        # Adversary level filter
+        with col2:
+            adversary_level = st.selectbox(
+                "Filter by adversary level",
+                options=["All", 0, 1, 2, 3, 4, 5, 6],
+                index=0,
+            )
+            if adversary_level == "All":
+                adversary_level = None
 
     return GameFilters(
         min_players=min_players,
         max_players=max_players,
         player=player,
         adversary=adversary,
+        adversary_level=adversary_level,
         date_from=date_from,
         date_to=date_to,
     )
