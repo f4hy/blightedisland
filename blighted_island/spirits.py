@@ -9,6 +9,7 @@ from typing import Literal, List, Dict, Optional, Set, Tuple
 from pydantic import BaseModel, Field
 import streamlit as st
 import urllib.parse
+from elements import ELEMENTS, ELEMENT_EMOJIS
 
 # Type definition for spirit complexity
 Complexity = Literal["Very High", "High", "Moderate", "Low"]
@@ -23,6 +24,7 @@ class Spirit(BaseModel):
     name: str
     complexity: Complexity
     aspect: Optional[str] = None
+    primary_elements: List[str] = Field(default_factory=list)
 
     def __str__(self) -> str:
         """Format spirit as a string, including aspect if present."""
@@ -48,6 +50,11 @@ class Spirit(BaseModel):
         complexity_map = {"Low": 1, "Moderate": 2, "High": 3, "Very High": 4}
         return complexity_map.get(self.complexity, 0)
 
+    @property
+    def element_emojis(self) -> str:
+        """Get the spirit's primary elements as emojis."""
+        return " ".join(ELEMENT_EMOJIS.get(element, element) for element in self.primary_elements)
+
 
 def spirit_image(spirit: Spirit) -> None:
     """
@@ -72,44 +79,42 @@ def spirit_image(spirit: Spirit) -> None:
 SPIRITS: List[Spirit] = sorted(
     [
         # Base Game Spirits
-        Spirit(name="Lightning's Swift Strike", complexity="Low"),
-        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Pandemonium"),
-        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Wind"),
-        Spirit(name="River Surges in Sunlight", complexity="Low"),
-        Spirit(name="River Surges in Sunlight", complexity="Low", aspect="Sunshine"),
-        Spirit(name="Shadows Flicker Like Flame", complexity="Low"),
-        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Madness"),
-        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Reach"),
-        Spirit(name="Vital Strength of the Earth", complexity="Low"),
-        Spirit(
-            name="Vital Strength of the Earth", complexity="Low", aspect="Resilience"
-        ),
+        Spirit(name="Lightning's Swift Strike", complexity="Low", primary_elements=["Air", "Fire"]),
+        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Pandemonium", primary_elements=["Air", "Fire"]),
+        Spirit(name="Lightning's Swift Strike", complexity="Low", aspect="Wind", primary_elements=["Air", "Fire"]),
+        Spirit(name="River Surges in Sunlight", complexity="Low", primary_elements=["Water", "Plant"]),
+        Spirit(name="River Surges in Sunlight", complexity="Low", aspect="Sunshine", primary_elements=["Water", "Plant"]),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low", primary_elements=["Fire", "Moon"]),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Madness", primary_elements=["Fire", "Moon"]),
+        Spirit(name="Shadows Flicker Like Flame", complexity="Low", aspect="Reach", primary_elements=["Fire", "Moon"]),
+        Spirit(name="Vital Strength of the Earth", complexity="Low", primary_elements=["Earth", "Plant"]),
+        Spirit(name="Vital Strength of the Earth", complexity="Low", aspect="Resilience", primary_elements=["Earth", "Plant"]),
         # Branch & Claw Expansion
-        Spirit(name="A Spread of Rampant Green", complexity="Moderate"),
-        Spirit(name="Thunderspeaker", complexity="Moderate"),
-        Spirit(name="Bringer of Dreams and Nightmares", complexity="High"),
-        Spirit(name="Ocean's Hungry Grasp", complexity="High"),
+        Spirit(name="A Spread of Rampant Green", complexity="Moderate", primary_elements=["Plant", "Water"]),
+        Spirit(name="Thunderspeaker", complexity="Moderate", primary_elements=["Air", "Animal"]),
+        Spirit(name="Bringer of Dreams and Nightmares", complexity="High", primary_elements=["Moon", "Air"]),
+        Spirit(name="Ocean's Hungry Grasp", complexity="High", primary_elements=["Water", "Moon"]),
         # Promo Pack 1
-        Spirit(name="Keeper of the Forbidden Wilds", complexity="Moderate"),
-        Spirit(name="Sharp Fangs Behind the Leaves", complexity="Moderate"),
+        Spirit(name="Keeper of the Forbidden Wilds", complexity="Moderate", primary_elements=["Plant", "Animal"]),
+        Spirit(name="Sharp Fangs Behind the Leaves", complexity="Moderate", primary_elements=["Animal", "Plant"]),
         # Promo Pack 2
-        Spirit(name="Heart of the Wildfire", complexity="High"),
-        Spirit(name="Serpent Slumbering Beneath the Island", complexity="High"),
+        Spirit(name="Heart of the Wildfire", complexity="High", primary_elements=["Fire", "Plant"]),
+        Spirit(name="Serpent Slumbering Beneath the Island", complexity="High", primary_elements=["Earth", "Water"]),
         # Jagged Earth Expansion
-        Spirit(name="Lure of the Deep Wilderness", complexity="Moderate"),
-        Spirit(name="Many Minds Move as One", complexity="Moderate"),
-        Spirit(name="Stone's Unyielding Defiance", complexity="Moderate"),
-        Spirit(name="Volcano Looming High", complexity="Moderate"),
-        Spirit(name="Vengeance as a Burning Plague", complexity="High"),
-        Spirit(name="Fractured Days Split the Sky", complexity="Very High"),
-        Spirit(name="Shifting Memory of Ages", complexity="Moderate"),
+        Spirit(name="Lure of the Deep Wilderness", complexity="Moderate", primary_elements=["Animal", "Plant"]),
+        Spirit(name="Many Minds Move as One", complexity="Moderate", primary_elements=["Animal", "Air"]),
+        Spirit(name="Stone's Unyielding Defiance", complexity="Moderate", primary_elements=["Earth", "Fire"]),
+        Spirit(name="Volcano Looming High", complexity="Moderate", primary_elements=["Fire", "Earth"]),
+        Spirit(name="Vengeance as a Burning Plague", complexity="High", primary_elements=["Fire", "Plant"]),
+        Spirit(name="Fractured Days Split the Sky", complexity="Very High", primary_elements=["Sun", "Moon"]),
+        Spirit(name="Shifting Memory of Ages", complexity="Moderate", primary_elements=["Sun", "Earth"]),
         # Nature Incarnate Expansion
-        Spirit(name="Devouring Teeth Lurk Underfoot", complexity="Low"),
-        Spirit(name="Eyes Watch from the Trees", complexity="Low"),
-        Spirit(name="Fathomless Mud of the Swamp", complexity="Low"),
-        Spirit(name="Rising Heat of Stone and Sand", complexity="Low"),
-        Spirit(name="Sun-Bright Whirlwind", complexity="Low"),
-        Spirit(name="Shroud of Silent Mist", complexity="High"),
+        Spirit(name="Devouring Teeth Lurk Underfoot", complexity="Low", primary_elements=["Animal", "Earth"]),
+        Spirit(name="Eyes Watch from the Trees", complexity="Low", primary_elements=["Animal", "Plant"]),
+        Spirit(name="Fathomless Mud of the Swamp", complexity="Low", primary_elements=["Water", "Earth"]),
+        Spirit(name="Rising Heat of Stone and Sand", complexity="Low", primary_elements=["Fire", "Earth"]),
+        Spirit(name="Sun-Bright Whirlwind", complexity="Low", primary_elements=["Sun", "Air"]),
+        Spirit(name="Shroud of Silent Mist", complexity="High", primary_elements=["Air", "Water"]),
     ],
     key=str,
 )

@@ -8,6 +8,17 @@ ELEMENTS: Final[list[str]] = [
     "Fire",
     "Water",
     "Plant",
-    "Mountain",
+    "Earth",
     "Animal",
 ]
+
+ELEMENT_EMOJIS: Final[dict[str, str]] = {
+    "Sun": "☀️",
+    "Moon": "🌙",
+    "Air": "💨",
+    "Fire": "🔥",
+    "Water": "💧",
+    "Plant": "🌱",
+    "Earth": "⛰️",
+    "Animal": "🦁",
+}

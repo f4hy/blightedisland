@@ -19,6 +19,7 @@ import calendar
 import os
 import tempfile
 from io import StringIO
+import random
 
 # Import project modules
 import spirits
@@ -187,9 +188,35 @@ def render_random_spirit_tab() -> None:
 
     complexity_filter = None if selected_complexity == "Any" else selected_complexity
 
+    # Add element filter
+    st.write("Filter by elements (optional):")
+    selected_elements = st.multiselect(
+        "Select elements",
+        options=spirits.ELEMENTS,
+        help="Select one or more elements to filter spirits. Leave empty to show all spirits."
+    )
+
+    # Get filtered spirits based on complexity and elements
+    filtered_spirits = spirits.get_spirits_by_complexity(complexity_filter)
+    if selected_elements:
+        filtered_spirits = [
+            spirit for spirit in filtered_spirits 
+            if any(element in spirit.primary_elements for element in selected_elements)
+        ]
+
+    if not filtered_spirits:
+        st.warning("No spirits match the selected filters. Try adjusting your filters.")
+        return
+
+    # Show matching spirits
+    if selected_elements:
+        st.write(f"Found {len(filtered_spirits)} matching spirits:")
+        for spirit in filtered_spirits:
+            st.write(f"- {spirit.display_name} ({spirit.element_emojis})")
+
     # Randomize button
     if st.button("🎲 Randomize Spirit", type="primary"):
-        selected = spirits.random_spirit(complexity_filter)
+        selected = random.choice(filtered_spirits)
 
         # Display in a nice card-like format
         col1, col2 = st.columns([1, 2])
@@ -203,6 +230,7 @@ def render_random_spirit_tab() -> None:
         with col2:
             st.subheader(selected.display_name)
             st.write(f"**Complexity:** {selected.complexity}")
+            st.write(f"**Primary Elements:** {selected.element_emojis}")
 
             # Get spirit stats if we have game data
             games = game_history.list_games()
