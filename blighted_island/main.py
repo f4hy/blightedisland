@@ -37,6 +37,8 @@ from config import (
     RESULT_OPTIONS,
 )
 
+DELETE_ENABLED = os.getenv("USER") == "f4hy"
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -193,14 +195,15 @@ def render_random_spirit_tab() -> None:
     selected_elements = st.multiselect(
         "Select elements",
         options=spirits.ELEMENTS,
-        help="Select one or more elements to filter spirits. Leave empty to show all spirits."
+        help="Select one or more elements to filter spirits. Leave empty to show all spirits.",
     )
 
     # Get filtered spirits based on complexity and elements
     filtered_spirits = spirits.get_spirits_by_complexity(complexity_filter)
     if selected_elements:
         filtered_spirits = [
-            spirit for spirit in filtered_spirits 
+            spirit
+            for spirit in filtered_spirits
             if any(element in spirit.primary_elements for element in selected_elements)
         ]
 
@@ -481,7 +484,7 @@ def render_game_history_tab(games: List[game_history.Game]) -> None:
                     "🗑️ Delete",
                     key=f"delete_game_{i}",
                     help="Delete this game record",
-                    disabled=False,
+                    disabled=not DELETE_ENABLED,
                 ):
                     # Delete functionality would be implemented here
                     st.warning("Delete functionality not implemented yet")
