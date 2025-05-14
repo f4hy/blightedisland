@@ -108,6 +108,7 @@ SPIRITS: List[Spirit] = sorted(
         Spirit(name="Vengeance as a Burning Plague", complexity="High", primary_elements=["Fire", "Plant"]),
         Spirit(name="Fractured Days Split the Sky", complexity="Very High", primary_elements=["Sun", "Moon"]),
         Spirit(name="Shifting Memory of Ages", complexity="Moderate", primary_elements=["Sun", "Earth"]),
+        Spirit(name="Grinning Rickster Stirs Up Trouble", complexity="Moderate", primary_elements=["Moon", "Fire"]),
         # Nature Incarnate Expansion
         Spirit(name="Devouring Teeth Lurk Underfoot", complexity="Low", primary_elements=["Animal", "Earth"]),
         Spirit(name="Eyes Watch from the Trees", complexity="Low", primary_elements=["Animal", "Plant"]),
