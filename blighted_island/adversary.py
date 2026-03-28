@@ -39,6 +39,7 @@ ADVERSARY_NAMES: List[str] = sorted(
         "France (Plantation Colony)",
         "Habsburg Monarchy (Livestock Colony)",
         "Russia",
+        "Scotland",
         # "Habsburg Mining Expedition",  # Commented out for now
     ]
 )
