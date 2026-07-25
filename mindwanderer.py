@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import re
 import sys
 from collections import Counter
@@ -30,6 +31,13 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://mindwanderer.net/si/player/json.cgi"
 UID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
+
+# mindwanderer.net device UIDs we know belong to people we've actually played
+# with. There's no directory or lookup for these - each one has to be given to
+# us directly by that person (see their own Spirit Island Digital app).
+KNOWN_UIDS: List[str] = [
+    "5e5cb61b-e4a5-46e4-9f33-19b992dcc42c",  # Brendan
+]
 
 
 class MindWandererError(Exception):
@@ -167,11 +175,20 @@ def summarize(games: List[GameRecord]) -> str:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Fetch a player's Spirit Island Digital game history from mindwanderer.net"
+        description="Fetch player Spirit Island Digital game history from mindwanderer.net"
     )
-    parser.add_argument("uid", help="mindwanderer.net device UID, e.g. from your stats page URL")
     parser.add_argument(
-        "-o", "--output", metavar="PATH", help="Write the fetched games as JSON to this file"
+        "uid",
+        nargs="?",
+        help="mindwanderer.net device UID to fetch. Defaults to all of KNOWN_UIDS.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        metavar="PATH",
+        help="Write fetched games as JSON to this file. "
+        "When fetching more than one uid, this is treated as a directory "
+        "and one '<uid>.json' is written per uid.",
     )
     parser.add_argument(
         "--raw",
@@ -185,32 +202,47 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 
-    try:
-        if args.raw:
-            raw_games = fetch_raw_games(args.uid)
-            output_text = json.dumps(raw_games, indent=2)
-            game_count = len(raw_games)
-            summary_text = f"Games: {game_count}"
-        else:
-            games = fetch_games(args.uid)
-            output_text = json.dumps([g.model_dump(mode="json") for g in games], indent=2)
-            summary_text = summarize(games)
-    except MindWandererError as e:
-        print(f"Error: {e}", file=sys.stderr)
+    uids = [args.uid] if args.uid else KNOWN_UIDS
+    if not uids:
+        print("No uid given and KNOWN_UIDS is empty.", file=sys.stderr)
         return 1
 
-    if args.output:
-        with open(args.output, "w") as f:
-            f.write(output_text)
+    multiple = len(uids) > 1
+    if multiple and args.output:
+        os.makedirs(args.output, exist_ok=True)
+
+    exit_code = 0
+    for uid in uids:
+        try:
+            if args.raw:
+                raw_games = fetch_raw_games(uid)
+                output_text = json.dumps(raw_games, indent=2)
+                summary_text = f"Games: {len(raw_games)}"
+            else:
+                games = fetch_games(uid)
+                output_text = json.dumps([g.model_dump(mode="json") for g in games], indent=2)
+                summary_text = summarize(games)
+        except MindWandererError as e:
+            print(f"Error fetching uid={uid}: {e}", file=sys.stderr)
+            exit_code = 1
+            continue
+
         if not args.quiet:
-            print(f"Wrote {args.output}")
-    elif not args.quiet:
-        print(output_text)
+            print(f"--- {uid} ---")
 
-    if not args.quiet:
-        print(summary_text)
+        if args.output:
+            path = os.path.join(args.output, f"{uid}.json") if multiple else args.output
+            with open(path, "w") as f:
+                f.write(output_text)
+            if not args.quiet:
+                print(f"Wrote {path}")
+        elif not args.quiet:
+            print(output_text)
 
-    return 0
+        if not args.quiet:
+            print(summary_text)
+
+    return exit_code
 
 
 if __name__ == "__main__":
