@@ -17,7 +17,7 @@ from config import STORAGE_ROOT, CACHE_TTL
 # Import required project modules - handled in a way to avoid circular imports
 from players import Player, select_player
 from spirits import Spirit
-from adversary import Adversary
+from adversary import Adversary, ADVERSARY_NAMES
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class GameFilters(BaseModel):
     max_players: int
     player: Optional[Player] = None
     adversary: Optional[str] = None
-    adversary_level: Optional[int] = None  # Added filter for adversary level
+    adversary_level: Optional[int] = None
     date_from: Optional[date] = None
     date_to: Optional[date] = None
 
@@ -203,13 +203,13 @@ def record_game(game: Game) -> bool:
 
 def delete_game(game: Game) -> bool:
     """
-    Save a game record to storage.
+    Delete a game record from storage.
 
     Args:
-        game: The game to save
+        game: The game to delete
 
     Returns:
-        bool: True if successfully saved, False otherwise
+        bool: True if successfully deleted, False otherwise
     """
     fs = get_fs()
     if not fs:
@@ -226,8 +226,8 @@ def delete_game(game: Game) -> bool:
         return True
 
     except Exception as e:
-        logger.error(f"Error saving game: {e}")
-        st.error(f"Unable to save game: {e}")
+        logger.error(f"Error deleting game: {e}")
+        st.error(f"Unable to delete game: {e}")
         traceback.print_exc()
         return False
 
@@ -320,8 +320,6 @@ def set_filters() -> GameFilters:
         # Adversary filter
         col1, col2 = st.columns(2)
         with col1:
-            from adversary import ADVERSARY_NAMES
-
             adversary = st.selectbox(
                 "Filter by adversary", options=["All"] + ADVERSARY_NAMES, index=0
             )

@@ -4,8 +4,11 @@ Handles player representation and selection in the UI.
 """
 
 import streamlit as st
-from typing import List, Optional, Dict
+from typing import TYPE_CHECKING, List, Optional, Dict
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from game_history import Game
 
 
 class Player(BaseModel, frozen=True):
@@ -99,7 +102,7 @@ def add_player(name: str) -> Optional[Player]:
     return new_player
 
 
-def get_player_stats(games: List) -> Dict[str, Dict[str, int]]:
+def get_player_stats(games: List["Game"]) -> Dict[str, Dict[str, int]]:
     """
     Calculate statistics for each player from game history.
     
@@ -109,7 +112,7 @@ def get_player_stats(games: List) -> Dict[str, Dict[str, int]]:
     Returns:
         Dict mapping player names to their statistics
     """
-    stats = {}
+    stats: Dict[str, Dict[str, int]] = {}
     
     for game in games:
         for player_spirit in game.players_played:

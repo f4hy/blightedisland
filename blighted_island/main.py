@@ -427,8 +427,8 @@ def render_game_history_tab(games: List[game_history.Game]) -> None:
 
     # Sort options
     sort_options = {
-        "Newest first": lambda g: g.date_played,
-        "Oldest first": lambda g: -g.date_played,
+        "Newest first": lambda g: g.date_played.toordinal(),
+        "Oldest first": lambda g: -g.date_played.toordinal(),
         "Adversary (A-Z)": lambda g: g.adversary.name,
         "Adversary level (high-low)": lambda g: -g.adversary.level,
     }
@@ -677,14 +677,6 @@ def breakdown_by_adversary(games: List[game_history.Game]) -> None:
 
     # Create bar chart
     if not df.empty:
-        chart_data = pd.melt(
-            df,
-            id_vars=["adversary"],
-            value_vars=["wins", "losses"],
-            var_name="result",
-            value_name="count",
-        )
-
         # Display horizontal bar chart
         st.bar_chart(
             data=df,
